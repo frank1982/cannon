@@ -43,8 +43,8 @@ bool GameScene::init()
     groundLayer->setPosition(0,0);
     this->addChild(groundLayer, 0);
     
-    loadCannon();
-    loadDriver();
+    //loadCannon();
+    //loadDriver();
  	
     
     // Load DragonBones Data.

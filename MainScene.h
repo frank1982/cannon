@@ -13,7 +13,10 @@ public:
     virtual bool init();
     CREATE_FUNC(MainScene);
 
-    
+    virtual bool onTouchBegan(Touch* pTouch, Event* pEvent);
+    virtual void onTouchMoved(Touch* pTouch, Event* pEvent);
+    virtual void onTouchEnded(Touch* pTouch, Event* pEvent);
+
 };
 
 
