@@ -3,7 +3,8 @@
 #define PhysicLayer_h
 #include "Monster.h"
 #include "Pirate.h"
-
+#include "CombatCtrlLayer.h"
+#include "Cannon.h"
 
 using namespace cocos2d;
 
@@ -17,12 +18,13 @@ public:
     CREATE_FUNC(PhysicLayer);
     int STAGENUM;
     
+    
     Vec2 origin;
     CCSize visibleSize;
 
     void loadCannon();
     void loadLife();
-    void loadBarrier();
+
     
     std::vector<Sprite*> _lifeVector;
     Sprite* cannonBase;
@@ -45,6 +47,8 @@ public:
     void statusManagerWork();//FSM
     
     std::vector<Monster> _monsterVectors;//所有monster数组
+    Cannon* CANNON;
+    
 
 };
 

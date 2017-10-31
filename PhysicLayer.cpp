@@ -2,7 +2,7 @@
 
 #include <stdio.h>
 #include "PhysicLayer.h"
-#include "Demo.h"
+
 
 USING_NS_CC;
 
@@ -18,7 +18,7 @@ bool PhysicLayer::init()
     origin = Director::getInstance()->getVisibleOrigin();
     visibleSize = Director::getInstance()->getVisibleSize();
     _inExplosion=false;
-
+    CANNON=Cannon::GetInstance();//获取大炮的单例,要手工删除
   
     
     
@@ -28,7 +28,6 @@ bool PhysicLayer::init()
     //load cannon
     loadCannon();
     loadLife();
-    loadBarrier();
     
 
     this->scheduleUpdate();
@@ -84,6 +83,7 @@ void PhysicLayer::addMonster(MonsterType monsterType,Vec2 position){
 
 void PhysicLayer::loadCannon(){
     
+    
     cannonBase=Sprite::create("res/cannonBase.png");
     cannonBase->setScale(visibleSize.width/cannonBase->getContentSize().width/16);
     cannonBase->setPositionX(10+cannonBase->getBoundingBox().size.width/2);
@@ -102,6 +102,39 @@ void PhysicLayer::loadCannon(){
 }
 
 void PhysicLayer::cannonShoot(float shootAngle){//发射间隔要大于爆炸的粒子效果持续时间！
+    
+    //射击之后,播放一段倒计时动画可以再次装入炮弹,发消息通知可以装入
+    //clock动画
+    auto clockSp=Sprite::create("res/clock0.png");
+    clockSp->setScale(visibleSize.height/clockSp->getContentSize().height/15);
+    clockSp->setPositionX(cannonBase->getPositionX());
+    clockSp->setPositionY(cannonBase->getPositionY()+cannonBase->getBoundingBox().size.height+clockSp->getBoundingBox().size.height);
+    this->addChild(clockSp,1);
+    
+   
+    
+    
+    
+    //创建序列帧动画
+    auto animation = CCAnimation::create();
+    //设置动画名字数组的长度
+    char nameSize[20] = {0};
+    for (int i =0; i<4; i++){
+        //循环遍历
+        sprintf(nameSize, "res/clock%d.png",i);
+        animation->addSpriteFrameWithFile(nameSize);
+    }
+    animation->setDelayPerUnit(1.5f/12.0f);//duration/(frameNumbers*repeatNumber)
+    //设置播放循环 一直播放 为-1
+    animation->setLoops(3);
+    animation->setRestoreOriginalFrame(true);
+    auto animate = CCAnimate::create(animation);
+    clockSp->runAction(animate);
+    
+    
+    //获取ctrlLayer!
+    auto ctrlLayer=(CombatCtrlLayer*)Director::getInstance()->getRunningScene()->getChildByTag(1);
+    ctrlLayer->CANLOADSHELL=true;
     
     _inExplosion=false;
 
@@ -183,13 +216,4 @@ void PhysicLayer::loadLife(){
         _lifeVector.push_back(lifeSp);
     }
 }
-void PhysicLayer::loadBarrier(){
-    
-    barrierSp=Sprite::create("res/barrier.png");
-    barrierSp->setScale(cannonBase->getBoundingBox().size.width/barrierSp->getContentSize().height/2);
-    auto rightBorderCannonBase=cannonBase->getPositionX()+cannonBase->getBoundingBox().size.width/2;
-    barrierSp->setPositionX(rightBorderCannonBase+20-barrierSp->getBoundingBox().size.width/2);
-    barrierSp->setPositionY(cannonBase->getPositionY()-10);
-    this->addChild(barrierSp,1);
 
-}

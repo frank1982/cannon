@@ -8,7 +8,7 @@
 #include "cocos2d.h"
 #include "cocos-ext.h"
 #include "CombatScene.h"
-#include "GameScene.h"
+
 
 using namespace cocos2d;
 class MapScene : public cocos2d::Scene

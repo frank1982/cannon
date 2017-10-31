@@ -16,12 +16,13 @@ bool CombatBgLayer::init()
     Vec2 origin = Director::getInstance()->getVisibleOrigin();
     CCSize visibleSize = Director::getInstance()->getVisibleSize();
     
-    auto bgSp=Sprite::create("res/combatBg.png");
+    auto bgSp=Sprite::create("res/map0.png");
     bgSp->setScaleX(visibleSize.width/bgSp->getContentSize().width);
     bgSp->setScaleY(visibleSize.height/bgSp->getContentSize().height);
     bgSp->setPosition(visibleSize.width/2,visibleSize.height/2);
     this->addChild(bgSp,0);
     
+    /*
     //cloud move
     auto cloud1=Sprite::create("res/cloud1.png");
     cloud1->setScale(visibleSize.width/cloud1->getContentSize().width/6);
@@ -44,7 +45,7 @@ bool CombatBgLayer::init()
     auto seq2=Sequence::create(action21,action22,action23,nullptr);
     auto repeat2=RepeatForever::create(seq2);
     cloud2->runAction(repeat2);
-    
+    */
 
     
     return true;

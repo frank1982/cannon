@@ -20,7 +20,7 @@ public:
     CREATE_FUNC(CombatScene);
     CCSize visibleSize;
     Vec2 origin;
-    int stageNum;
+    int _stageNum;
     
     CombatBgLayer* bgLayer;
     CombatCtrlLayer* ctrlLayer;

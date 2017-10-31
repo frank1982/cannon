@@ -17,5 +17,20 @@ enum MonsterType
 {
     PIRATE,
 };
+enum ShellType
+{
+    nut,Wood,
+};
+enum ShellDamageType
+{
+    SCOPE,POINT,LINE,
+};
+enum CannonStatus{
+    
+    readyForLoadShell,
+    loadingShell,//正在装填炮弹，防止重复装填;
+    readyForFire,
+    coldingDown
+};
 
 #endif /* Constant_h */

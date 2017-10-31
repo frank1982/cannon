@@ -5,6 +5,7 @@
 USING_NS_CC;
 
 
+
 bool CombatCtrlLayer::init()
 {
     
@@ -18,12 +19,12 @@ bool CombatCtrlLayer::init()
     origin = Director::getInstance()->getVisibleOrigin();
     visibleSize = Director::getInstance()->getVisibleSize();
     _waveNum=0;
-
+    CANLOADSHELL=true;
     
 
     pauseBtn=Button::create("res/pauseBtn.png");
     pauseBtn->setScale(visibleSize.width/pauseBtn->getContentSize().width/16);
-    pauseBtn->setPosition(Vec2(visibleSize.width-20-pauseBtn->getBoundingBox().size.width*5/2,visibleSize.height-10-pauseBtn->getBoundingBox().size.height/2));
+    pauseBtn->setPosition(Vec2(visibleSize.width-20-pauseBtn->getBoundingBox().size.width*5/2,visibleSize.height+origin.y-10-pauseBtn->getBoundingBox().size.height/2));
     pauseBtn->setTag(1000);
     pauseBtn->addClickEventListener([=](Ref* sender){
         
@@ -42,12 +43,12 @@ bool CombatCtrlLayer::init()
     });
     resetBtn=Button::create("res/resetBtn.png");
     resetBtn->setScale(visibleSize.width/pauseBtn->getContentSize().width/16);
-    resetBtn->setPosition(Vec2(visibleSize.width-15-pauseBtn->getBoundingBox().size.width*3/2,visibleSize.height-10-pauseBtn->getBoundingBox().size.height/2));
+    resetBtn->setPosition(Vec2(visibleSize.width-15-pauseBtn->getBoundingBox().size.width*3/2,visibleSize.height+origin.y-10-pauseBtn->getBoundingBox().size.height/2));
     resetBtn->setTag(1001);
     
     backBtn=Button::create("res/backBtn.png");
     backBtn->setScale(visibleSize.width/pauseBtn->getContentSize().width/16);
-    backBtn->setPosition(Vec2(visibleSize.width-10-pauseBtn->getBoundingBox().size.width/2,visibleSize.height-10-pauseBtn->getBoundingBox().size.height/2));
+    backBtn->setPosition(Vec2(visibleSize.width-10-pauseBtn->getBoundingBox().size.width/2,visibleSize.height+origin.y-10-pauseBtn->getBoundingBox().size.height/2));
     backBtn->setTag(1002);
     backBtn->addClickEventListener([=](Ref* sender){
 
@@ -59,28 +60,17 @@ bool CombatCtrlLayer::init()
     this->addChild(resetBtn,0);
     this->addChild(backBtn,0);
     
+   
+    //炮弹放置的甲板
+    auto dockSp=Sprite::create("res/dock.png");
+    dockSp->setScale(visibleSize.width/dockSp->getContentSize().width/3);
+    dockSp->setPosition(Vec2(5+dockSp->getBoundingBox().size.width/2,visibleSize.height+origin.y-10-dockSp->getBoundingBox().size.height/2));
+    dockSp->setTag(2000);
+    this->addChild(dockSp,0);
     
-    //load shell list
-    _shellNumSelected=-1;
-    auto solidShellBtn=Button::create("res/shells/solid.png","res/shells/solid.png");
-    solidShellBtn->setName("solid");
-    auto scatterShellBtn=Button::create("res/shells/scatter.png","res/shells/scatter.png");
-    scatterShellBtn->setName("scatter");
-    auto blastShellBtn=Button::create("res/shells/blast.png","res/shells/blast.png");
-    blastShellBtn->setName("blast");
-    btnVector.push_back(solidShellBtn);
-    btnVector.push_back(scatterShellBtn);
-    btnVector.push_back(blastShellBtn);
-
-    for(int i=0;i<btnVector.size();i++){
-        
-        Button* btn = btnVector[i];
-        btn->setScale(visibleSize.width/pauseBtn->getContentSize().width/18);
-        btn->setPositionX(10+i*(btn->getBoundingBox().size.width+2.5)+btn->getBoundingBox().size.width/2);
-        btn->setPositionY(visibleSize.height-10-btn->getBoundingBox().size.height/2);
-        btn->addClickEventListener(CC_CALLBACK_1(CombatCtrlLayer::shellSelect,this,i));
-        this->addChild(btn,1);
-    }
+    //随机生成炮弹并放置到甲板上
+    this->schedule(schedule_selector(CombatCtrlLayer::createShells), 2.0);
+    
     
     loadWaveProcess();
     
@@ -96,12 +86,82 @@ bool CombatCtrlLayer::init()
     return true;
 }
 
+
+void CombatCtrlLayer::createShells(float dt){
+    
+    if(SHELL_MAP.size() < 3){//未满
+        
+        if(SHELL_MAP[0].empty()){
+            
+            loadShell(0,nut);
+
+        }else if(SHELL_MAP[1].empty()){
+            
+            loadShell(1,nut);
+            
+        }else{
+            
+            loadShell(2,nut);
+            
+        }
+       
+
+    }else{
+        
+        //CCLOG("炮弹已满3格");
+    }
+    
+}
+
+void CombatCtrlLayer::loadShell(int num,ShellType shellType){
+ 
+    //暂时先不用shellType
+    //先加载炮弹数据
+    ShellOfNut nut = ShellOfNut();
+    ShellOfNut *nutPtr = &nut;//new ShellOfNut()
+    SHELL_MAP[num] = "coconut";
+    //CCLOG("num : %d",num);
+    
+    //显示加载炮弹动画
+    auto nutSp=nutPtr->SHELL_SP;
+    auto dockScale=this->getChildByTag(2000)->getScale();
+    auto shellScale=(this->getChildByTag(2000)->getContentSize().width-60)/nutSp->getContentSize().width/3;
+    nutSp->setScale(shellScale*dockScale, shellScale*dockScale);
+    float PX=5+this->getChildByTag(2000)->getBoundingBox().size.width/6+num*this->getChildByTag(2000)->getBoundingBox().size.width/3;
+    //nutSp->setPosition(PX,this->getChildByTag(2000)->getPositionY());
+    nutSp->setPosition(PX,visibleSize.height+origin.y);
+  
+    
+    auto shengziSp=Sprite::create("res/shengzi.png");
+    shengziSp->setPosition(nutSp->getContentSize().width/2,nutSp->getContentSize().height/2+shengziSp->getContentSize().height/2);
+    shengziSp->setTag(3001);
+    nutSp->addChild(shengziSp,-1);
+    
+    this->addChild(nutSp,1);
+    SHELL_SP[num]=nutSp;
+    
+    //nut move
+    //CCEaseOut由快至慢
+    auto moveTo=CCMoveTo::create(2, Vec2(PX,this->getChildByTag(2000)->getPositionY()));
+    auto ease=CCEaseBounceOut::create(moveTo);
+    auto seq=CCSequence::create(ease,CallFunc::create(CC_CALLBACK_0(CombatCtrlLayer::shellLoadCallFunc, this, num)),nullptr);
+    nutSp->runAction(seq);
+    
+};
+
+void CombatCtrlLayer::shellLoadCallFunc(int num){
+    
+    SHELL_SP[num]->getChildByTag(3001)->removeFromParent();
+    //准备选择炮弹及动画
+    SHELL_READY_FLAG[num]=true;//这个位置炮弹装载完毕
+};
+
 void CombatCtrlLayer::loadWaveProcess(){
     
     stageProcess=Sprite::create("res/stageProcess.png");
     stageProcess->setScale(visibleSize.width/stageProcess->getContentSize().width/4);
     stageProcess->setPositionX(visibleSize.width/2);
-    stageProcess->setPositionY(visibleSize.height-10-stageProcess->getBoundingBox().size.height/2);
+    stageProcess->setPositionY(visibleSize.height+origin.y-10-stageProcess->getBoundingBox().size.height/2);
     std::string str = "0/" + std::to_string(MAX_WAVE_NUM[0]);
     //std::string str = "0/8";
     processLabel=Label::create(str, "Aria", 12);
@@ -128,94 +188,83 @@ void CombatCtrlLayer::onEnter(){
     Layer::onEnter();//不写会黑屏；需要调一下父类的方法
   
 };
-/*
-void CombatCtrlLayer::loadForwardBackwardBtns(){
-    
-    forwardBtn=Button::create("res/forward.png");
-    forwardBtn->setScale(visibleSize.height/forwardBtn->getContentSize().height/12);
-    forwardBtn->setPositionX(visibleSize.width-5-forwardBtn->getBoundingBox().size.width/2);
-    forwardBtn->setPositionY(visibleSize.height/2);
-    forwardBtn->addClickEventListener([&](Ref* sender){
-    
-        forwardBtn->setVisible(false);
-        auto move=MoveBy::create(0.6,Vec2(-visibleSize.width, 0));
-        auto seq=Sequence::create(move,CallFunc::create([&](){
-            
-             backwardBtn->setVisible(true);
-            
-        }), NULL);
-        _physicLayer->runAction(seq);
-        
-    });
-    this->addChild(forwardBtn,2);
-    
-    backwardBtn=Button::create("res/backward.png");
-    backwardBtn->setScale(visibleSize.height/backwardBtn->getContentSize().height/12);
-    backwardBtn->setPositionX(5+backwardBtn->getBoundingBox().size.width/2);
-    backwardBtn->setPositionY(visibleSize.height/2);
-    backwardBtn->setVisible(false);
-    backwardBtn->addClickEventListener([&](Ref* sender){
-        
-        backwardBtn->setVisible(false);
-        auto move=MoveBy::create(0.6,Vec2(visibleSize.width, 0));
-        auto seq=Sequence::create(move,CallFunc::create([&](){
-            
-            forwardBtn->setVisible(true);
-            
-        }), NULL);
-        _physicLayer->runAction(seq);
-        
-    });
-    this->addChild(backwardBtn,2);
 
-};
-*/
-void CombatCtrlLayer::shellSelect(Ref* pSender,int btnNum){
-    
-    for(int i=0;i<btnVector.size();i++){
-        btnVector[i]->setTouchEnabled(false);
-    }
-    std::string textureName="";
-    //之前选择的炮弹是否存在？如果存在则缩回
-    if(_shellNumSelected>=0){//之前有选择
-        
-        //之前选中的缩回
-        textureName=btnVector[_shellNumSelected]->getName().c_str();
-        btnVector[_shellNumSelected]->loadTextureNormal("res/shells/"+textureName+".png");
-        //btnVector[_shellNumSelected]->setPositionY(btnVector[_shellNumSelected]->getPositionY()+btnVector[_shellNumSelected]->getBoundingBox().size.height/3);
-        CCActionInterval *easeElasticOut = CCEaseElasticOut::create(MoveBy::create(0.6,Vec2(0,btnVector[_shellNumSelected]->getBoundingBox().size.height/5)));
-        btnVector[_shellNumSelected]->runAction(easeElasticOut);
-    }
 
-    _shellNumSelected=btnNum;
-    textureName=btnVector[_shellNumSelected]->getName().c_str();
-    btnVector[_shellNumSelected]->loadTextureNormal("res/shells/"+textureName+"2.png");
-    CCActionInterval *easeElasticOut = CCEaseElasticOut::create(MoveBy::create(0.6,Vec2(0,-btnVector[_shellNumSelected]->getBoundingBox().size.height/5)));
-    auto seq=Sequence::create(easeElasticOut,CallFunc::create([&](){
-        
-        for(int i=0;i<btnVector.size();i++){
-            btnVector[i]->setTouchEnabled(true);
-        }
-        
-    }), NULL);
-    btnVector[_shellNumSelected]->runAction(seq);
-    
-};
 //计算发射角度
 bool CombatCtrlLayer::onTouchBegan(Touch* pTouch, Event* pEvent){
     
     //CCLOG("touch begin");
     tmpTouchPointCatched = pTouch->getLocation();//返回点击的位置
+    //判断物理层的大炮是否处于可装填炮弹的状态
+    //auto physicLayer=(PhysicLayer*)Director::getInstance()->getRunningScene()->getChildByTag(2);
+    
+    
+    
+    if(this->getChildByTag(2000)->getBoundingBox().containsPoint(tmpTouchPointCatched)){//点击甲板区不会导致控制大炮,中间可能存在一个垂直位移
+        //CCLOG("点击时的size: %d",SHELL_SP.size());
+        map<int ,Sprite*>::iterator it;
+        it = SHELL_SP.begin();
+        while(it != SHELL_SP.end()){
+            
+            
+            if(it->second->getBoundingBox().containsPoint(tmpTouchPointCatched)){
+                
+                CCLOG("第 %d 枚炮弹被选中",it->first);
+                //播放炮弹装入大炮的动画;
+                if(SHELL_READY_FLAG[it->first] && CANLOADSHELL){//该炮弹已装载完毕，并且当前出于可射击状态
+                    
+                    CANLOADSHELL=false;//防止重复装入炮弹到大炮
+                    auto physicLayer=(PhysicLayer*)Director::getInstance()->getRunningScene()->getChildByTag(2);
+
+                    auto moveTo=CCMoveTo::create(1.0f, Vec2(physicLayer->cannonBase->getPositionX(),physicLayer->cannonBase->getPositionY()+origin.y));
+                    auto scaleBy=CCScaleBy::create(1.0f, 0.3f);
+                    auto seq=Sequence::create(CCSpawn::create(moveTo,scaleBy,NULL),CallFunc::create([=](){
+                        
+                        CCLOG("炮弹装载动画完毕");
+                        it->second->removeFromParent();
+                        SHELL_READY_FLAG[it->first]=false;
+                        
+                        //从map删除
+                        SHELL_SP.erase(it);
+                        /*
+                        map<int,Sprite*>::iterator key = SHELL_SP.find(it->first);
+                        if(key!=SHELL_SP.end())
+                        {
+                            SHELL_SP.erase(key);  
+                        }
+                        */
+                        //SHELL_MAP
+                        map<int,std::string>::iterator key2 = SHELL_MAP.find(it->first);
+                        if(key2!=SHELL_MAP.end())
+                        {
+                            SHELL_MAP.erase(key2);
+                        }
+                        CCLOG("删除后的size: %d",SHELL_SP.size());
+                        
+                        
+                    }), NULL);
+                    it->second->runAction(seq);
+                }
+             
+            }
+        
+            it++;
+        }
+        return false;
+    }
+    
     
     return true;  //可以传递到moved和ended
 };
 void CombatCtrlLayer::onTouchMoved(Touch* pTouch, Event* pEvent){
     
     //rotate the gun
+    
     auto nowTouchPoint=pTouch->getLocation();
     float distance=sqrt(pow((nowTouchPoint.x-tmpTouchPointCatched.x),2)+pow((nowTouchPoint.y-tmpTouchPointCatched.y),2));
     auto addAngle = distance/3;
-    float angle=_physicLayer->cannonGun->getRotation();
+    auto physicLayer=(PhysicLayer*)Director::getInstance()->getRunningScene()->getChildByTag(2);
+    float angle=physicLayer->cannonGun->getRotation();
     if(nowTouchPoint.x < tmpTouchPointCatched.x){//调高角度
         
         newAngle=angle-addAngle;
@@ -223,7 +272,7 @@ void CombatCtrlLayer::onTouchMoved(Touch* pTouch, Event* pEvent){
             
             newAngle = -MAX_ANGLE;
         }
-        _physicLayer->cannonGun->setRotation(newAngle);
+        physicLayer->cannonGun->setRotation(newAngle);
         
     }else{//调低角度
         newAngle=angle+addAngle;
@@ -231,13 +280,14 @@ void CombatCtrlLayer::onTouchMoved(Touch* pTouch, Event* pEvent){
             
             newAngle = MIN_ANGLE;
         }
-        _physicLayer->cannonGun->setRotation(newAngle);
+        physicLayer->cannonGun->setRotation(newAngle);
 
     }
-  
+    
 };
 void CombatCtrlLayer::onTouchEnded(Touch* pTouch, Event* pEvent){
 
     //shoot
-    _physicLayer->cannonShoot(-newAngle);
+    auto physicLayer=(PhysicLayer*)Director::getInstance()->getRunningScene()->getChildByTag(2);
+    physicLayer->cannonShoot(-newAngle);
 };

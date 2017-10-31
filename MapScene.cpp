@@ -24,29 +24,27 @@ bool MapScene::init()
     auto visibleSize = Director::getInstance()->getVisibleSize();
     Vec2 origin = Director::getInstance()->getVisibleOrigin();
     
-    layercolor = CCLayerColor::create(ccc4(51, 202, 244, 255), visibleSize.width, visibleSize.height);
+    layercolor = CCLayerColor::create(ccc4(0, 153, 204, 255), visibleSize.width, visibleSize.height);
     layercolor->setCascadeColorEnabled(false);
     layercolor->setPosition(ccp(origin.x, origin.y));
     layercolor->setTag(1000);
     this->addChild(layercolor, 0);
     
-    auto navSp=Sprite::create("res/mapNav.png");
-    float scaleXOfNavSp=visibleSize.width/navSp->getContentSize().width;
-    navSp->setScale(scaleXOfNavSp,scaleXOfNavSp);
-    navSp->setPosition(Vec2(visibleSize.width/2,visibleSize.height-navSp->getBoundingBox().size.height/2));
-    layercolor->addChild(navSp, 2);
 
-    auto upgradeBtn=Button::create("res/upgrade.png","res/upgrade.png");
-    upgradeBtn->setScale(scaleXOfNavSp);
-    upgradeBtn->setPosition(Vec2(visibleSize.width-upgradeBtn->getBoundingBox().size.width/2,visibleSize.height-upgradeBtn->getBoundingBox().size.height/2));
+
+    auto upgradeBtn=Button::create("res/upgrade.png");
+    float scaleXOfUpgradeBtn=visibleSize.height/upgradeBtn->getContentSize().height/8;
+    upgradeBtn->setScale(scaleXOfUpgradeBtn);
+    upgradeBtn->setPosition(Vec2(visibleSize.width*13/100,visibleSize.height*86/100));
     upgradeBtn->setTag(1);
     layercolor->addChild(upgradeBtn, 3);
     upgradeBtn->addClickEventListener([=](Ref* sender){
     
         //按钮缩进
+        /*
         auto move=CCMoveBy::create(0.4,Vec2(0,layercolor->getChildByTag(1)->getBoundingBox().size.height/2));
         layercolor->getChildByTag(1)->runAction(Sequence::create(move,CallFunc::create([&](){CCLOG("enter upgrade scene...");}),nullptr));
-    
+         */
     });
     
     auto islandSp=Sprite::create("res/island.png");
